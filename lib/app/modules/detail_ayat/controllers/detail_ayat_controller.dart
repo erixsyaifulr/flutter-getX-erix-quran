@@ -10,14 +10,6 @@ class DetailAyatController extends GetxController {
         .get(Uri.parse("https://api.quran.sutanlab.id/surah/$id/$ayat"));
     Map<String, dynamic> data =
         (jsonDecode(res.body) as Map<String, dynamic>)["data"];
-    Map<String, dynamic> dataToModel = {
-      "number": data["number"],
-      "meta": data["meta"],
-      "text": data["text"],
-      "translation": data["translation"],
-      "audio": data["audio"],
-      "tafsir": data["tafsir"],
-    };
-    return DetailAyat.fromJson(dataToModel);
+    return DetailAyat.fromJson(data);
   }
 }
