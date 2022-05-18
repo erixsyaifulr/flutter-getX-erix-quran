@@ -10,6 +10,8 @@ import '../controllers/home_controller.dart';
 class HomeView extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
+    if (Get.isDarkMode) controller.isDark.value = true;
+
     Widget lastRead() {
       return Container(
         height: 150,
@@ -77,7 +79,7 @@ class HomeView extends GetView<HomeController> {
       );
     }
 
-    Widget tabBar() {
+    Widget tabBarTitle() {
       return TabBar(
         indicator: BoxDecoration(
           borderRadius: BorderRadius.circular(30),
@@ -118,8 +120,16 @@ class HomeView extends GetView<HomeController> {
             itemBuilder: (context, index) {
               Surah surah = snapshot.data![index];
               return ListTile(
-                leading: CircleAvatar(
-                  child: Text("${surah.number}"),
+                leading: Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage("assets/images/frame.png"),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  child: Center(child: Text(surah.number.toString())),
                 ),
                 trailing: Text("${surah.name?.short}"),
                 title: Text("${surah.name?.transliteration?.id}"),
@@ -135,14 +145,35 @@ class HomeView extends GetView<HomeController> {
       );
     }
 
+    Widget juzTabBarView() {
+      return ListView.builder(
+        itemCount: 30,
+        itemBuilder: ((context, index) {
+          return ListTile(
+            leading: Container(
+              height: 40,
+              width: 40,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage("assets/images/frame.png"),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: Center(child: Text("${index + 1}")),
+            ),
+            title: Text("Juz ${index + 1}"),
+            onTap: () {},
+          );
+        }),
+      );
+    }
+
     Widget tabBarView() {
       return Expanded(
         child: TabBarView(
           children: [
             surahTabBarView(),
-            Center(
-              child: Text("Juz"),
-            ),
+            juzTabBarView(),
             Center(
               child: Text("Bookmark"),
             ),
@@ -166,7 +197,7 @@ class HomeView extends GetView<HomeController> {
               SizedBox(height: 20),
               lastRead(),
               SizedBox(height: 20),
-              tabBar(),
+              tabBarTitle(),
               tabBarView(),
             ],
           ),
@@ -175,13 +206,24 @@ class HomeView extends GetView<HomeController> {
     }
 
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Al-Quran App'),
-          centerTitle: true,
-          actions: [
-            IconButton(onPressed: () {}, icon: Icon(Icons.search)),
-          ],
-        ),
-        body: body());
+      appBar: AppBar(
+        title: Text('Al-Quran App'),
+        centerTitle: true,
+        actions: [
+          IconButton(onPressed: () {}, icon: Icon(Icons.search)),
+        ],
+      ),
+      body: body(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Get.changeTheme(Get.isDarkMode ? lightTheme : darkTheme);
+          controller.isDark.toggle();
+        },
+        child: Obx(() => Icon(
+              Icons.color_lens,
+              color: controller.isDark.isTrue ? appPurplueDark : appWhite,
+            )),
+      ),
+    );
   }
 }
