@@ -10,9 +10,16 @@ const appOrange = Color(0XFFE6704A);
 const appGrey = Colors.grey;
 
 ThemeData lightTheme = ThemeData(
+  brightness: Brightness.light,
   primaryColor: appPurplue,
   scaffoldBackgroundColor: appWhite,
-  appBarTheme: AppBarTheme(backgroundColor: appPurplue),
+  floatingActionButtonTheme: FloatingActionButtonThemeData(
+    backgroundColor: appPurplue,
+  ),
+  appBarTheme: AppBarTheme(
+    backgroundColor: appPurplue,
+    elevation: 0,
+  ),
   textTheme: TextTheme(
     bodyText1: TextStyle(color: appPurplueDark),
     bodyText2: TextStyle(color: appPurplueDark),
@@ -20,9 +27,16 @@ ThemeData lightTheme = ThemeData(
 );
 
 ThemeData darkTheme = ThemeData(
+  brightness: Brightness.dark,
   primaryColor: appPurplueLight2,
   scaffoldBackgroundColor: appPurplueDark,
-  appBarTheme: AppBarTheme(backgroundColor: appPurplueDark),
+  floatingActionButtonTheme: FloatingActionButtonThemeData(
+    backgroundColor: appWhite,
+  ),
+  appBarTheme: AppBarTheme(
+    backgroundColor: appPurplueDark,
+    elevation: 0,
+  ),
   textTheme: TextTheme(
     bodyText1: TextStyle(color: appWhite),
     bodyText2: TextStyle(color: appWhite),
