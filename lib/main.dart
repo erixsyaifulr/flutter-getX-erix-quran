@@ -1,4 +1,4 @@
-import 'package:erixquran/app/constant/color.dart';
+import 'package:erixquran/app/constant/colors.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
