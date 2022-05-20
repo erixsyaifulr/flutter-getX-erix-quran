@@ -1,4 +1,4 @@
-import 'package:erixquran/app/constant/color.dart';
+import 'package:erixquran/app/constant/colors.dart';
 import 'package:erixquran/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 
@@ -10,8 +10,8 @@ import '../controllers/introduction_controller.dart';
 class IntroductionView extends GetView<IntroductionController> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
+    Widget body() {
+      return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
@@ -59,7 +59,11 @@ class IntroductionView extends GetView<IntroductionController> {
             ),
           ),
         ],
-      ),
+      );
+    }
+
+    return Scaffold(
+      body: body(),
     );
   }
 }
