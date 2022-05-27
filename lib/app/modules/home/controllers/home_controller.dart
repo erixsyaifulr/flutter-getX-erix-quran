@@ -1,15 +1,28 @@
 import 'dart:convert';
 
 import 'package:erixquran/app/constant/endpoints.dart';
-import 'package:erixquran/app/data/models/juz.dart';
+import 'package:erixquran/app/data/models/detail_surah.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../constant/colors.dart';
 import '../../../data/models/surah.dart';
 
 class HomeController extends GetxController {
   RxBool isDark = false.obs;
   List<Surah> allSurah = [];
+
+  void changeTheme() {
+    Get.changeTheme(Get.isDarkMode ? lightTheme : darkTheme);
+    isDark.toggle();
+    final box = GetStorage();
+    if (Get.isDarkMode)
+      box.remove("themeDark");
+    else
+      box.write("themeDark", true);
+  }
+
   Future<List<Surah>> getAllSurah() async {
     var res = await http.get(Uri.parse(Endpoint.getSurahUrl));
     List data = (jsonDecode(res.body) as Map<String, dynamic>)["data"];
@@ -20,15 +33,47 @@ class HomeController extends GetxController {
     return allSurah;
   }
 
-  Future<List<Juz>> getAllJuz() async {
-    List<Juz> allJuz = [];
-    for (int i = 1; i <= 30; i++) {
-      var res = await http.get(Uri.parse(Endpoint.getDetailJuzUrl + "$i"));
-      Map<String, dynamic> data =
-          (jsonDecode(res.body) as Map<String, dynamic>)["data"];
-      Juz juz = Juz.fromJson(data);
-      allJuz.add(juz);
+  Future<List<Map<String, dynamic>>> getAllJuz() async {
+    int juz = 1;
+    List<Map<String, dynamic>> arrayOfVerse = [];
+    List<Map<String, dynamic>> allJuz = [];
+
+    for (int i = 1; i <= 144; i++) {
+      var res = await http.get(Uri.parse(Endpoint.getSurahUrl + "/$i"));
+      Map<String, dynamic> rawData = jsonDecode(res.body)["data"];
+      DetailSurah data = DetailSurah.fromJson(rawData);
+      if (data.verses != null) {
+        data.verses!.forEach((element) {
+          if (element.meta?.juz == juz) {
+            arrayOfVerse.add({
+              "surah": data,
+              "verse": element,
+            });
+          } else {
+            allJuz.add({
+              "juz": juz,
+              "start": arrayOfVerse[0],
+              "end": arrayOfVerse[arrayOfVerse.length - 1],
+              "verses": arrayOfVerse,
+            });
+            juz++;
+            arrayOfVerse = [];
+            arrayOfVerse.add({
+              "surah": data,
+              "verse": element,
+            });
+          }
+        });
+      }
     }
+
+    allJuz.add({
+      "juz": juz,
+      "start": arrayOfVerse[0],
+      "end": arrayOfVerse[arrayOfVerse.length - 1],
+      "verses": arrayOfVerse,
+    });
+
     return allJuz;
   }
 }
