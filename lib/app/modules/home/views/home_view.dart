@@ -1,5 +1,5 @@
 import 'package:erixquran/app/constant/colors.dart';
-import 'package:erixquran/app/data/models/juz.dart' as juz;
+import 'package:erixquran/app/data/models/detail_surah.dart' as detail;
 import 'package:erixquran/app/data/models/surah.dart';
 import 'package:erixquran/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
@@ -158,72 +158,53 @@ class HomeView extends GetView<HomeController> {
     }
 
     Widget juzTabBarView() {
-      return FutureBuilder<List<juz.Juz>>(
+      return FutureBuilder<List<Map<String, dynamic>>>(
         future: controller.getAllJuz(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+        builder: (context, snapshpt) {
+          if (snapshpt.connectionState == ConnectionState.waiting) {
             return Center(
               child: CircularProgressIndicator(),
             );
           }
-          if (!snapshot.hasData) {
+          if (!snapshpt.hasData) {
             return Center(
               child: Text('Data Kosong'),
             );
           }
           return ListView.builder(
-              itemCount: snapshot.data!.length,
-              itemBuilder: (context, index) {
-                juz.Juz allJuz = snapshot.data![index];
-                String startSurah = allJuz.start!.split(" - ").first;
-                String endSurah = allJuz.end!.split(" - ").first;
-                List<Surah> rawAllSurahInJuz = [];
-                List<Surah> allSurahInJuz = [];
-
-                for (Surah item in controller.allSurah) {
-                  rawAllSurahInJuz.add(item);
-                  if (item.name!.transliteration!.id == endSurah) {
-                    break;
-                  }
-                }
-
-                for (Surah item in rawAllSurahInJuz.reversed.toList()) {
-                  allSurahInJuz.add(item);
-                  if (item.name!.transliteration!.id == startSurah) {
-                    break;
-                  }
-                }
-
-                return ListTile(
-                  leading: Container(
-                    height: 40,
-                    width: 40,
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage("assets/images/frame.png"),
-                        fit: BoxFit.cover,
-                      ),
+            itemCount: snapshpt.data!.length,
+            itemBuilder: (context, index) {
+              Map<String, dynamic> dataPerJuz = snapshpt.data![index];
+              return ListTile(
+                leading: Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage("assets/images/frame.png"),
+                      fit: BoxFit.cover,
                     ),
-                    child: Center(child: Text("${index + 1}")),
                   ),
-                  title: Text("Juz ${index + 1}"),
-                  isThreeLine: true,
-                  subtitle: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Mulai dari ${allJuz.start}"),
-                      Text("Sampai ${allJuz.end}"),
-                    ],
-                  ),
-                  onTap: () {
-                    Get.toNamed(Routes.DETAIL_JUZ, arguments: {
-                      "juz": allJuz,
-                      "surah": allSurahInJuz.reversed.toList(),
-                    });
-                  },
-                );
-              });
+                  child: Center(child: Text("${index + 1}")),
+                ),
+                title: Text("Juz ${index + 1}"),
+                isThreeLine: true,
+                subtitle: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                        "Mulai dari ${(dataPerJuz['start']['surah'] as detail.DetailSurah).name?.transliteration?.id} | ayat ${(dataPerJuz['start']['verse'] as detail.Verse).number?.inSurah}"),
+                    Text(
+                        "Sampai ${(dataPerJuz['start']['surah'] as detail.DetailSurah).name?.transliteration?.id} | ayat ${(dataPerJuz['end']['verse'] as detail.Verse).number?.inSurah}"),
+                  ],
+                ),
+                onTap: () {
+                  Get.toNamed(Routes.DETAIL_JUZ, arguments: dataPerJuz);
+                },
+              );
+            },
+          );
         },
       );
     }
@@ -267,10 +248,7 @@ class HomeView extends GetView<HomeController> {
 
     Widget changeThemeButton() {
       return FloatingActionButton(
-        onPressed: () {
-          Get.changeTheme(Get.isDarkMode ? lightTheme : darkTheme);
-          controller.isDark.toggle();
-        },
+        onPressed: () => controller.changeTheme(),
         child: Obx(() => Icon(
               Icons.color_lens,
               color: controller.isDark.isTrue ? appPurplueDark : appWhite,
