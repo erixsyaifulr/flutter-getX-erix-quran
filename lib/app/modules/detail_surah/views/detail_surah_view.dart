@@ -119,38 +119,67 @@ class DetailSurahView extends GetView<DetailSurahController> {
                             ),
                             child: Center(child: Text("${index + 1}")),
                           ),
-                          Obx(
-                            () => Row(
+                          GetBuilder<DetailSurahController>(
+                            builder: (cnt) => Row(
                               children: [
                                 IconButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      Get.defaultDialog(
+                                          title: "Bookmark",
+                                          middleText: "Pilih jenis bookmark",
+                                          actions: [
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                controller.addBookmark(
+                                                    true,
+                                                    snapshot.data!,
+                                                    verse,
+                                                    index);
+                                              },
+                                              child: Text("Last Read"),
+                                              style: ElevatedButton.styleFrom(
+                                                  primary: appPurplue),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                controller.addBookmark(
+                                                    false,
+                                                    snapshot.data!,
+                                                    verse,
+                                                    index);
+                                              },
+                                              child: Text("Bookmark"),
+                                              style: ElevatedButton.styleFrom(
+                                                  primary: appPurplue),
+                                            ),
+                                          ]);
+                                    },
                                     icon: Icon(Icons.bookmark_add_outlined)),
-                                (controller.audioState == "stop")
+                                (verse.audioState == "stop")
                                     ? IconButton(
                                         onPressed: () {
-                                          controller
-                                              .playAudion(verse.audio?.primary);
+                                          cnt.playAudion(verse);
                                         },
                                         icon: Icon(Icons.play_arrow),
                                       )
                                     : Row(
                                         children: [
-                                          (controller.audioState == "playing")
+                                          (verse.audioState == "playing")
                                               ? IconButton(
                                                   onPressed: () {
-                                                    controller.pauseAudion();
+                                                    cnt.pauseAudion(verse);
                                                   },
                                                   icon: Icon(Icons.pause),
                                                 )
                                               : IconButton(
                                                   onPressed: () {
-                                                    controller.resumeAudion();
+                                                    cnt.resumeAudion(verse);
                                                   },
                                                   icon: Icon(Icons.play_arrow),
                                                 ),
                                           IconButton(
                                             onPressed: () {
-                                              controller.stopAudion();
+                                              cnt.stopAudion(verse);
                                             },
                                             icon: Icon(Icons.stop),
                                           ),

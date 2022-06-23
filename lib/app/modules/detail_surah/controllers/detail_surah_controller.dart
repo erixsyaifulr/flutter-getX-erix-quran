@@ -1,10 +1,13 @@
 import 'dart:convert';
 
+import 'package:erixquran/app/constant/colors.dart';
 import 'package:erixquran/app/constant/endpoints.dart';
+import 'package:erixquran/app/data/db/bookmart.dart';
 import 'package:erixquran/app/data/models/detail_surah.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
+import 'package:sqflite/sqflite.dart';
 
 class DetailSurahController extends GetxController {
   Future<DetailSurah> getDetailSurah(String id) async {
@@ -14,17 +17,29 @@ class DetailSurahController extends GetxController {
     return DetailSurah.fromJson(data);
   }
 
-  RxString audioState = "stop".obs;
   final player = AudioPlayer();
+  Verse? lastVerse;
+  DatabaseManager database = DatabaseManager.instance;
 
-  Future<void> playAudion(String? url) async {
-    if (url != null) {
+  Future<void> playAudion(Verse? verse) async {
+    if (verse?.audio?.primary != null) {
       try {
+        if (lastVerse == null) {
+          lastVerse = verse;
+        }
+        lastVerse!.audioState = "stop";
+
+        lastVerse = verse; // if last verse is not empty
+        lastVerse!.audioState = "stop";
+        update();
+
         await player.stop();
-        await player.setUrl(url);
-        audioState.value = "playing";
+        await player.setUrl(verse!.audio!.primary.toString());
+        verse.audioState = "playing";
+        update();
         await player.play();
-        audioState.value = "stop";
+        verse.audioState = "stop";
+        update();
         await player.stop();
       } on PlayerException catch (e) {
         Get.defaultDialog(title: "Oops !", middleText: "${e.message}");
@@ -39,10 +54,11 @@ class DetailSurahController extends GetxController {
     }
   }
 
-  Future<void> pauseAudion() async {
+  Future<void> pauseAudion(Verse verse) async {
     try {
       await player.pause();
-      audioState.value = "pause";
+      verse.audioState = "pause";
+      update();
     } on PlayerException catch (e) {
       Get.defaultDialog(title: "Oops !", middleText: "${e.message}");
     } on PlayerInterruptedException catch (e) {
@@ -54,11 +70,13 @@ class DetailSurahController extends GetxController {
     }
   }
 
-  Future<void> resumeAudion() async {
+  Future<void> resumeAudion(Verse? verse) async {
     try {
-      audioState.value = "playing";
+      verse?.audioState = "playing";
+      update();
       await player.play();
-      audioState.value = "stop";
+      verse?.audioState = "stop";
+      update();
     } on PlayerException catch (e) {
       Get.defaultDialog(title: "Oops !", middleText: "${e.message}");
     } on PlayerInterruptedException catch (e) {
@@ -70,10 +88,11 @@ class DetailSurahController extends GetxController {
     }
   }
 
-  Future<void> stopAudion() async {
+  Future<void> stopAudion(Verse verse) async {
     try {
       await player.stop();
-      audioState.value = "stop";
+      verse.audioState = "stop";
+      update();
     } on PlayerException catch (e) {
       Get.defaultDialog(title: "Oops !", middleText: "${e.message}");
     } on PlayerInterruptedException catch (e) {
@@ -82,6 +101,41 @@ class DetailSurahController extends GetxController {
     } catch (e) {
       Get.defaultDialog(
           title: "Oops !", middleText: "Audio tidak dapat dipause");
+    }
+  }
+
+  void addBookmark(
+      bool lastRead, DetailSurah surah, Verse verse, int index) async {
+    Database db = await database.db;
+    bool flagExist = false;
+
+    if (lastRead) {
+      await db.delete("bookmark", where: "last_read = 1");
+    } else {
+      List checkData = await db.query("bookmark",
+          where:
+              "surah = '${surah.name!.transliteration!.id!}' and ayat = ${verse.number!.inSurah!} and juz = ${verse.meta!.juz!} and bookmark_by = 'surah' and index_ayat = ${index} and last_read = 0");
+      if (checkData.isNotEmpty) {
+        flagExist = true;
+      }
+    }
+
+    if (!flagExist) {
+      await db.insert("bookmark", {
+        "surah": "${surah.name!.transliteration!.id!}",
+        "ayat": "${verse.number!.inSurah!}",
+        "juz": "${verse.meta!.juz!}",
+        "bookmark_by": "surah",
+        "index_ayat": index,
+        "last_read": lastRead ? 1 : 0
+      });
+      Get.back();
+      Get.snackbar("Berhasil", "Berhasil menambah bookmark",
+          colorText: appWhite);
+    } else {
+      Get.back();
+      Get.snackbar("Oops !", "Bookmark telah tersedia untuk ayat tersebut",
+          colorText: appWhite);
     }
   }
 
