@@ -228,8 +228,10 @@ class Verse {
     this.translation,
     this.audio,
     this.tafsir,
+    this.audioState = "stop",
   });
 
+  String audioState;
   Number? number;
   Meta? meta;
   Text? text;
@@ -253,6 +255,7 @@ class Verse {
         "translation": translation?.toJson(),
         "audio": audio?.toJson(),
         "tafsir": tafsir?.toJson(),
+        "audio_state": audioState,
       };
 }
 

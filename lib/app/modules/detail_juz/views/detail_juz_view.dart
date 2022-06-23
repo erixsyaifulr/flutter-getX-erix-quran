@@ -73,106 +73,147 @@ class DetailJuzView extends GetView<DetailJuzController> {
     }
 
     Widget body() {
-      return ListView.builder(
-        padding: EdgeInsets.all(20),
-        itemCount: (detailJuz["verses"] as List).length,
-        itemBuilder: (context, index) {
-          if (detailJuz["verses"].length == 0) {
-            return Center(
-              child: Text('Tidak ada data'),
-            );
-          }
+      return ListView(
+        children: [
+          ListView.builder(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.all(20),
+            itemCount: (detailJuz["verses"] as List).length,
+            itemBuilder: (context, index) {
+              if (detailJuz["verses"].length == 0) {
+                return Center(
+                  child: Text('Tidak ada data'),
+                );
+              }
 
-          Map<String, dynamic> verse = detailJuz["verses"][index];
+              Map<String, dynamic> verse = detailJuz["verses"][index];
 
-          detail.DetailSurah surah = verse["surah"];
+              detail.DetailSurah surah = verse["surah"];
+              detail.Verse verseDetail = verse["verse"];
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              if ((verse["verse"] as detail.Verse).number?.inSurah == 1)
-                Column(
-                  children: [
-                    surahInformation(verse, surah),
-                    SizedBox(height: 20),
-                  ],
-                ),
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: appPurplueLight2.withOpacity(0.15),
-                ),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if (verseDetail.number?.inSurah == 1)
+                    Column(
+                      children: [
+                        surahInformation(verse, surah),
+                        SizedBox(height: 20),
+                      ],
+                    ),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: appPurplueLight2.withOpacity(0.15),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Container(
-                            height: 40,
-                            width: 40,
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: AssetImage("assets/images/frame.png"),
-                                fit: BoxFit.cover,
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                height: 40,
+                                width: 40,
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    image:
+                                        AssetImage("assets/images/frame.png"),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                child: Center(
+                                    child:
+                                        Text("${verseDetail.number?.inSurah}")),
                               ),
-                            ),
-                            child: Center(
-                                child: Text(
-                                    "${(verse["verse"] as detail.Verse).number?.inSurah}")),
+                              SizedBox(width: 10),
+                              Text(
+                                  "${surah.name!.transliteration!.id?.toUpperCase()}"),
+                            ],
                           ),
-                          SizedBox(width: 10),
-                          Text(
-                              "${surah.name!.transliteration!.id?.toUpperCase()}"),
+                          GetBuilder<DetailJuzController>(
+                            builder: (cnt) => Row(
+                              children: [
+                                IconButton(
+                                    onPressed: () {},
+                                    icon: Icon(Icons.bookmark_add_outlined)),
+                                (verseDetail.audioState == "stop")
+                                    ? IconButton(
+                                        onPressed: () {
+                                          cnt.playAudion(verseDetail);
+                                        },
+                                        icon: Icon(Icons.play_arrow),
+                                      )
+                                    : Row(
+                                        children: [
+                                          (verseDetail.audioState == "playing")
+                                              ? IconButton(
+                                                  onPressed: () {
+                                                    cnt.pauseAudion(
+                                                        verseDetail);
+                                                  },
+                                                  icon: Icon(Icons.pause),
+                                                )
+                                              : IconButton(
+                                                  onPressed: () {
+                                                    cnt.resumeAudion(
+                                                        verseDetail);
+                                                  },
+                                                  icon: Icon(Icons.play_arrow),
+                                                ),
+                                          IconButton(
+                                            onPressed: () {
+                                              cnt.stopAudion(verseDetail);
+                                            },
+                                            icon: Icon(Icons.stop),
+                                          ),
+                                        ],
+                                      ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
-                      Row(
-                        children: [
-                          IconButton(
-                              onPressed: () {},
-                              icon: Icon(Icons.bookmark_add_outlined)),
-                          IconButton(
-                              onPressed: () {}, icon: Icon(Icons.play_arrow)),
-                        ],
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-              SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.only(left: 40, right: 10),
-                child: Text(
-                  "${(verse["verse"] as detail.Verse).text?.arab}",
-                  textAlign: TextAlign.right,
-                  style: TextStyle(fontSize: 25),
-                ),
-              ),
-              SizedBox(height: 5),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: Text(
-                  "${(verse["verse"] as detail.Verse).text?.transliteration?.en}",
-                  textAlign: TextAlign.right,
-                  style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
-                ),
-              ),
-              SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: Text(
-                  "${(verse["verse"] as detail.Verse).translation?.id}",
-                  textAlign: TextAlign.justify,
-                  style: TextStyle(fontSize: 15),
-                ),
-              ),
-              SizedBox(height: 20),
-            ],
-          );
-        },
+                  SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 40, right: 10),
+                    child: Text(
+                      "${(verse["verse"] as detail.Verse).text?.arab}",
+                      textAlign: TextAlign.right,
+                      style: TextStyle(fontSize: 25),
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Text(
+                      "${(verse["verse"] as detail.Verse).text?.transliteration?.en}",
+                      textAlign: TextAlign.right,
+                      style:
+                          TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Text(
+                      "${(verse["verse"] as detail.Verse).translation?.id}",
+                      textAlign: TextAlign.justify,
+                      style: TextStyle(fontSize: 15),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                ],
+              );
+            },
+          ),
+        ],
       );
     }
 
