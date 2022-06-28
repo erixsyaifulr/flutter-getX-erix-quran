@@ -1,5 +1,6 @@
 import 'package:erixquran/app/constant/colors.dart';
 import 'package:erixquran/app/data/models/surah.dart';
+import 'package:erixquran/app/modules/home/controllers/home_controller.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -9,6 +10,8 @@ import '../controllers/detail_surah_controller.dart';
 
 class DetailSurahView extends GetView<DetailSurahController> {
   final Surah surah = Get.arguments;
+  final homeC = Get.find<HomeController>();
+
   @override
   Widget build(BuildContext context) {
     PreferredSizeWidget appBar() {
@@ -123,38 +126,34 @@ class DetailSurahView extends GetView<DetailSurahController> {
                             builder: (cnt) => Row(
                               children: [
                                 IconButton(
-                                    onPressed: () {
-                                      Get.defaultDialog(
-                                          title: "Bookmark",
-                                          middleText: "Pilih jenis bookmark",
-                                          actions: [
-                                            ElevatedButton(
-                                              onPressed: () {
-                                                controller.addBookmark(
-                                                    true,
-                                                    snapshot.data!,
-                                                    verse,
-                                                    index);
-                                              },
-                                              child: Text("Last Read"),
-                                              style: ElevatedButton.styleFrom(
-                                                  primary: appPurplue),
-                                            ),
-                                            ElevatedButton(
-                                              onPressed: () {
-                                                controller.addBookmark(
-                                                    false,
-                                                    snapshot.data!,
-                                                    verse,
-                                                    index);
-                                              },
-                                              child: Text("Bookmark"),
-                                              style: ElevatedButton.styleFrom(
-                                                  primary: appPurplue),
-                                            ),
-                                          ]);
-                                    },
-                                    icon: Icon(Icons.bookmark_add_outlined)),
+                                  onPressed: () {
+                                    Get.defaultDialog(
+                                        title: "Bookmark",
+                                        middleText: "Pilih jenis bookmark",
+                                        actions: [
+                                          ElevatedButton(
+                                            onPressed: () async {
+                                              await cnt.addBookmark(true,
+                                                  snapshot.data!, verse, index);
+                                              homeC.update();
+                                            },
+                                            child: Text("Last Read"),
+                                            style: ElevatedButton.styleFrom(
+                                                primary: appPurplue),
+                                          ),
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              cnt.addBookmark(false,
+                                                  snapshot.data!, verse, index);
+                                            },
+                                            child: Text("Bookmark"),
+                                            style: ElevatedButton.styleFrom(
+                                                primary: appPurplue),
+                                          ),
+                                        ]);
+                                  },
+                                  icon: Icon(Icons.bookmark_add_outlined),
+                                ),
                                 (verse.audioState == "stop")
                                     ? IconButton(
                                         onPressed: () {

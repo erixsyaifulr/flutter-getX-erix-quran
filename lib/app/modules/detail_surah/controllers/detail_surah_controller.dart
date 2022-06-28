@@ -4,6 +4,7 @@ import 'package:erixquran/app/constant/colors.dart';
 import 'package:erixquran/app/constant/endpoints.dart';
 import 'package:erixquran/app/data/db/bookmart.dart';
 import 'package:erixquran/app/data/models/detail_surah.dart';
+import 'package:erixquran/app/modules/home/controllers/home_controller.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
@@ -104,7 +105,7 @@ class DetailSurahController extends GetxController {
     }
   }
 
-  void addBookmark(
+  Future<void> addBookmark(
       bool lastRead, DetailSurah surah, Verse verse, int index) async {
     Database db = await database.db;
     bool flagExist = false;
@@ -113,7 +114,14 @@ class DetailSurahController extends GetxController {
       await db.delete("bookmark", where: "last_read = 1");
     } else {
       List checkData = await db.query("bookmark",
-          columns: ["surah", "ayat", "juz", "via", "index_ayat", "last_read"],
+          columns: [
+            "surah",
+            "ayat",
+            "juz",
+            "bookmark_by",
+            "index_ayat",
+            "last_read"
+          ],
           where:
               "surah = '${surah.name!.transliteration!.id!.replaceAll("'", "+")}' and ayat = ${verse.number!.inSurah!} and juz = ${verse.meta!.juz!} and bookmark_by = 'surah' and index_ayat = ${index} and last_read = 0");
       if (checkData.isNotEmpty) {

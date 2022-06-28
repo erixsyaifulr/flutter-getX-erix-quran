@@ -1,4 +1,5 @@
 import 'package:erixquran/app/data/models/detail_surah.dart' as detail;
+import 'package:erixquran/app/modules/home/controllers/home_controller.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -8,6 +9,8 @@ import '../controllers/detail_juz_controller.dart';
 
 class DetailJuzView extends GetView<DetailJuzController> {
   final Map<String, dynamic> detailJuz = Get.arguments;
+  final homeC = Get.find<HomeController>();
+
   @override
   Widget build(BuildContext context) {
     PreferredSizeWidget appBar() {
@@ -139,8 +142,34 @@ class DetailJuzView extends GetView<DetailJuzController> {
                             builder: (cnt) => Row(
                               children: [
                                 IconButton(
-                                    onPressed: () {},
-                                    icon: Icon(Icons.bookmark_add_outlined)),
+                                  onPressed: () {
+                                    Get.defaultDialog(
+                                        title: "Bookmark",
+                                        middleText: "Pilih jenis bookmark",
+                                        actions: [
+                                          ElevatedButton(
+                                            onPressed: () async {
+                                              await cnt.addBookmark(true, surah,
+                                                  verseDetail, index);
+                                              homeC.update();
+                                            },
+                                            child: Text("Last Read"),
+                                            style: ElevatedButton.styleFrom(
+                                                primary: appPurplue),
+                                          ),
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              cnt.addBookmark(false, surah,
+                                                  verseDetail, index);
+                                            },
+                                            child: Text("Bookmark"),
+                                            style: ElevatedButton.styleFrom(
+                                                primary: appPurplue),
+                                          ),
+                                        ]);
+                                  },
+                                  icon: Icon(Icons.bookmark_add_outlined),
+                                ),
                                 (verseDetail.audioState == "stop")
                                     ? IconButton(
                                         onPressed: () {
