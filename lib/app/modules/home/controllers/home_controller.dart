@@ -1,10 +1,12 @@
 import 'dart:convert';
 
 import 'package:erixquran/app/constant/endpoints.dart';
+import 'package:erixquran/app/data/db/bookmart.dart';
 import 'package:erixquran/app/data/models/detail_surah.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:sqflite/sqflite.dart';
 
 import '../../../constant/colors.dart';
 import '../../../data/models/surah.dart';
@@ -12,6 +14,7 @@ import '../../../data/models/surah.dart';
 class HomeController extends GetxController {
   RxBool isDark = false.obs;
   List<Surah> allSurah = [];
+  DatabaseManager database = DatabaseManager.instance;
 
   void changeTheme() {
     Get.changeTheme(Get.isDarkMode ? lightTheme : darkTheme);
@@ -75,5 +78,19 @@ class HomeController extends GetxController {
     });
 
     return allJuz;
+  }
+
+  Future<List<Map<String, dynamic>>> getBookMark() async {
+    Database db = await database.db;
+    List<Map<String, dynamic>> allBookmark =
+        await db.query("bookmark", where: "last_read = 0");
+    return allBookmark;
+  }
+
+  void deleteBookMark(int id) async {
+    Database db = await database.db;
+    await db.delete("bookmark", where: "id = $id");
+    update();
+    Get.snackbar("Berhasil", "Bookmark telah dihapus");
   }
 }

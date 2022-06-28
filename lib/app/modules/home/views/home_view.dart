@@ -209,15 +209,66 @@ class HomeView extends GetView<HomeController> {
       );
     }
 
+    Widget bookmarkTabBarView() {
+      return GetBuilder<HomeController>(
+        builder: (cnt) {
+          return FutureBuilder<List<Map<String, dynamic>>>(
+            future: cnt.getBookMark(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+
+              if (snapshot.data?.length == 0) {
+                return Center(
+                  child: Text("Bookmark tidak tersedia"),
+                );
+              }
+
+              return ListView.builder(
+                itemCount: snapshot.data!.length,
+                itemBuilder: (context, index) {
+                  Map<String, dynamic> data = snapshot.data![index];
+                  return ListTile(
+                      onTap: () {},
+                      leading: Container(
+                        height: 40,
+                        width: 40,
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage("assets/images/frame.png"),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        child: Center(child: Text("${index + 1}")),
+                      ),
+                      title: Text(
+                          "${data['surah'].toString().replaceAll("+", "'")}"),
+                      subtitle:
+                          Text("Ayat ${data['ayat']} - via ${data['via']}"),
+                      trailing: IconButton(
+                        onPressed: () {
+                          cnt.deleteBookMark(data['id']);
+                        },
+                        icon: Icon(Icons.delete),
+                      ));
+                },
+              );
+            },
+          );
+        },
+      );
+    }
+
     Widget tabBarView() {
       return Expanded(
         child: TabBarView(
           children: [
             surahTabBarView(),
             juzTabBarView(),
-            Center(
-              child: Text("Bookmark"),
-            ),
+            bookmarkTabBarView(),
           ],
         ),
       );
