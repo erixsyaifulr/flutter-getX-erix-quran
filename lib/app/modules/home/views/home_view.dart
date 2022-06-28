@@ -23,7 +23,7 @@ class HomeView extends GetView<HomeController> {
       );
     }
 
-    Widget lastRead() {
+    Widget loadingContainer() {
       return Container(
         height: 150,
         width: Get.width,
@@ -39,9 +39,7 @@ class HomeView extends GetView<HomeController> {
           borderRadius: BorderRadius.circular(20),
           child: InkWell(
             borderRadius: BorderRadius.circular(20),
-            onTap: () {
-              Get.toNamed(Routes.LAST_READ);
-            },
+            onTap: () {},
             child: Stack(children: [
               Positioned(
                 bottom: -30,
@@ -74,11 +72,10 @@ class HomeView extends GetView<HomeController> {
                     ),
                     Column(
                       children: [
-                        Text("Al Fatihah",
+                        Text("Loading...",
                             style: TextStyle(color: appWhite, fontSize: 20)),
                         SizedBox(height: 5),
-                        Text("Juz 1 | Ayat 5",
-                            style: TextStyle(color: appWhite)),
+                        Text("", style: TextStyle(color: appWhite)),
                       ],
                     ),
                   ],
@@ -88,6 +85,108 @@ class HomeView extends GetView<HomeController> {
           ),
         ),
       );
+    }
+
+    Widget lastRead() {
+      return GetBuilder<HomeController>(builder: (cnt) {
+        return FutureBuilder<Map<String, dynamic>?>(
+          future: cnt.getLastRead(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return loadingContainer();
+            }
+            Map<String, dynamic>? lastRead = snapshot.data;
+            return Container(
+              height: 150,
+              width: Get.width,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: [
+                  appPurplueLight1,
+                  appPurplueDark,
+                ]),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: () {
+                    if (lastRead != null) Get.toNamed(Routes.LAST_READ);
+                  },
+                  onLongPress: () {
+                    if (lastRead != null)
+                      Get.defaultDialog(
+                        title: "Konfirmasi",
+                        middleText:
+                            "Apakah anda yakin akan menghapus data terakhir baca ?",
+                        actions: [
+                          TextButton(
+                              onPressed: () => Get.back(),
+                              child: Text("Cancel")),
+                          ElevatedButton(
+                              onPressed: () => cnt.deleteBookMark(
+                                  lastRead['id'],
+                                  isLastRead: true),
+                              child: Text("Yakin")),
+                        ],
+                      );
+                  },
+                  child: Stack(children: [
+                    Positioned(
+                      bottom: -30,
+                      right: 0,
+                      child: Opacity(
+                        opacity: 0.6,
+                        child: Container(
+                          width: 150,
+                          height: 150,
+                          child: Image.asset(
+                            "assets/images/quran-logo.png",
+                            color: appWhite,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.menu_book_rounded, color: appWhite),
+                              SizedBox(width: 10),
+                              Text("Terakhir dibaca",
+                                  style: TextStyle(color: appWhite)),
+                            ],
+                          ),
+                          Column(
+                            children: [
+                              if (lastRead != null)
+                                Text(
+                                    "${lastRead['surah'].toString().replaceAll("+", "'")}",
+                                    style: TextStyle(
+                                        color: appWhite, fontSize: 20)),
+                              SizedBox(height: 5),
+                              Text(
+                                  lastRead == null
+                                      ? "Belum ada data"
+                                      : "Juz ${lastRead['juz']} | Ayat ${lastRead['ayat']}",
+                                  style: TextStyle(color: appWhite)),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ]),
+                ),
+              ),
+            );
+          },
+        );
+      });
     }
 
     Widget tabBarTitle() {
@@ -246,8 +345,8 @@ class HomeView extends GetView<HomeController> {
                       ),
                       title: Text(
                           "${data['surah'].toString().replaceAll("+", "'")}"),
-                      subtitle:
-                          Text("Ayat ${data['ayat']} - via ${data['via']}"),
+                      subtitle: Text(
+                          "Ayat ${data['ayat']} - via ${data['bookmark_by']}"),
                       trailing: IconButton(
                         onPressed: () {
                           cnt.deleteBookMark(data['id']);
