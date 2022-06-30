@@ -4,13 +4,14 @@ import 'package:erixquran/app/constant/colors.dart';
 import 'package:erixquran/app/constant/endpoints.dart';
 import 'package:erixquran/app/data/db/bookmart.dart';
 import 'package:erixquran/app/data/models/detail_surah.dart';
-import 'package:erixquran/app/modules/home/controllers/home_controller.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DetailSurahController extends GetxController {
+  AutoScrollController scrollC = AutoScrollController();
   Future<DetailSurah> getDetailSurah(String id) async {
     var res = await http.get(Uri.parse(Endpoint.getSurahUrl + "/$id"));
     Map<String, dynamic> data =
@@ -116,6 +117,7 @@ class DetailSurahController extends GetxController {
       List checkData = await db.query("bookmark",
           columns: [
             "surah",
+            "number_surah",
             "ayat",
             "juz",
             "bookmark_by",
@@ -123,7 +125,7 @@ class DetailSurahController extends GetxController {
             "last_read"
           ],
           where:
-              "surah = '${surah.name!.transliteration!.id!.replaceAll("'", "+")}' and ayat = ${verse.number!.inSurah!} and juz = ${verse.meta!.juz!} and bookmark_by = 'surah' and index_ayat = ${index} and last_read = 0");
+              "surah = '${surah.name!.transliteration!.id!.replaceAll("'", "+")}' and number_surah = ${surah.number!} and ayat = ${verse.number!.inSurah!} and juz = ${verse.meta!.juz!} and bookmark_by = 'surah' and index_ayat = ${index} and last_read = 0");
       if (checkData.isNotEmpty) {
         flagExist = true;
       }
@@ -132,6 +134,7 @@ class DetailSurahController extends GetxController {
     if (!flagExist) {
       await db.insert("bookmark", {
         "surah": "${surah.name!.transliteration!.id!.replaceAll("'", "+")}",
+        "number_surah": "${surah.number!}",
         "ayat": "${verse.number!.inSurah!}",
         "juz": "${verse.meta!.juz!}",
         "bookmark_by": "surah",
