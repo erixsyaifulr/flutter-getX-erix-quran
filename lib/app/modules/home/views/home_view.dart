@@ -247,7 +247,10 @@ class HomeView extends GetView<HomeController> {
                 subtitle: Text(
                     "${surah.numberOfVerses} Ayat | ${surah.revelation?.id}"),
                 onTap: () {
-                  Get.toNamed(Routes.DETAIL_SURAH, arguments: surah);
+                  Get.toNamed(Routes.DETAIL_SURAH, arguments: {
+                    "name": surah.name!.transliteration!.id,
+                    "number": surah.number,
+                  });
                 },
               );
             },
@@ -331,7 +334,13 @@ class HomeView extends GetView<HomeController> {
                 itemBuilder: (context, index) {
                   Map<String, dynamic> data = snapshot.data![index];
                   return ListTile(
-                      onTap: () {},
+                      onTap: () {
+                        Get.toNamed(Routes.DETAIL_SURAH, arguments: {
+                          "name": data['surah'].toString().replaceAll("+", "'"),
+                          "number": data['number_surah'],
+                          "bookmark": data
+                        });
+                      },
                       leading: Container(
                         height: 40,
                         width: 40,
