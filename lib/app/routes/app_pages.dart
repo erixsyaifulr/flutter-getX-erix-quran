@@ -10,9 +10,6 @@ import 'package:erixquran/app/modules/home/bindings/home_binding.dart';
 import 'package:erixquran/app/modules/home/views/home_view.dart';
 import 'package:erixquran/app/modules/introduction/bindings/introduction_binding.dart';
 import 'package:erixquran/app/modules/introduction/views/introduction_view.dart';
-import 'package:erixquran/app/modules/last_read/bindings/last_read_binding.dart';
-import 'package:erixquran/app/modules/last_read/views/last_read_view.dart';
-
 part 'app_routes.dart';
 
 class AppPages {
@@ -40,11 +37,6 @@ class AppPages {
       name: _Paths.DETAIL_AYAT,
       page: () => DetailAyatView(),
       binding: DetailAyatBinding(),
-    ),
-    GetPage(
-      name: _Paths.LAST_READ,
-      page: () => LastReadView(),
-      binding: LastReadBinding(),
     ),
     GetPage(
       name: _Paths.DETAIL_JUZ,
