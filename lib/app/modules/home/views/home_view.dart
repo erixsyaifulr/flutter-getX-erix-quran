@@ -112,7 +112,30 @@ class HomeView extends GetView<HomeController> {
                 child: InkWell(
                   borderRadius: BorderRadius.circular(20),
                   onTap: () {
-                    if (lastRead != null) Get.toNamed(Routes.LAST_READ);
+                    if (lastRead != null) {
+                      switch (lastRead["bookmark_by"]) {
+                        case "juz":
+                          if (controller.allJuzIsAvailable.isTrue) {
+                            Map<String, dynamic> dataMapPerJuz =
+                                controller.allJuz[lastRead['juz'] - 1];
+                            Get.toNamed(Routes.DETAIL_JUZ, arguments: {
+                              "juz": dataMapPerJuz,
+                              "bookmark": lastRead
+                            });
+                          } else {
+                            Get.snackbar("Oops !", "Data juz belum tersedia");
+                          }
+                          break;
+                        default:
+                          Get.toNamed(Routes.DETAIL_SURAH, arguments: {
+                            "name": lastRead['surah']
+                                .toString()
+                                .replaceAll("+", "'"),
+                            "number": lastRead['number_surah'],
+                            "bookmark": lastRead
+                          });
+                      }
+                    }
                   },
                   onLongPress: () {
                     if (lastRead != null)
@@ -264,6 +287,7 @@ class HomeView extends GetView<HomeController> {
         future: controller.getAllJuz(),
         builder: (context, snapshpt) {
           if (snapshpt.connectionState == ConnectionState.waiting) {
+            controller.allJuzIsAvailable.value = false;
             return Center(
               child: CircularProgressIndicator(),
             );
@@ -273,6 +297,7 @@ class HomeView extends GetView<HomeController> {
               child: Text('Data Kosong'),
             );
           }
+          controller.allJuzIsAvailable.value = true;
           return ListView.builder(
             itemCount: snapshpt.data!.length,
             itemBuilder: (context, index) {
@@ -302,7 +327,8 @@ class HomeView extends GetView<HomeController> {
                   ],
                 ),
                 onTap: () {
-                  Get.toNamed(Routes.DETAIL_JUZ, arguments: dataPerJuz);
+                  Get.toNamed(Routes.DETAIL_JUZ,
+                      arguments: {"juz": dataPerJuz});
                 },
               );
             },
@@ -334,34 +360,52 @@ class HomeView extends GetView<HomeController> {
                 itemBuilder: (context, index) {
                   Map<String, dynamic> data = snapshot.data![index];
                   return ListTile(
-                      onTap: () {
-                        Get.toNamed(Routes.DETAIL_SURAH, arguments: {
-                          "name": data['surah'].toString().replaceAll("+", "'"),
-                          "number": data['number_surah'],
-                          "bookmark": data
-                        });
-                      },
-                      leading: Container(
-                        height: 40,
-                        width: 40,
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: AssetImage("assets/images/frame.png"),
-                            fit: BoxFit.cover,
-                          ),
+                    onTap: () {
+                      switch (data["bookmark_by"]) {
+                        case "juz":
+                          if (controller.allJuzIsAvailable.isTrue) {
+                            Map<String, dynamic> dataMapPerJuz =
+                                controller.allJuz[data['juz'] - 1];
+                            Get.toNamed(Routes.DETAIL_JUZ, arguments: {
+                              "juz": dataMapPerJuz,
+                              "bookmark": data
+                            });
+                          } else {
+                            Get.snackbar("Oops !", "Data juz belum tersedia");
+                          }
+
+                          break;
+                        default:
+                          Get.toNamed(Routes.DETAIL_SURAH, arguments: {
+                            "name":
+                                data['surah'].toString().replaceAll("+", "'"),
+                            "number": data['number_surah'],
+                            "bookmark": data
+                          });
+                      }
+                    },
+                    leading: Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage("assets/images/frame.png"),
+                          fit: BoxFit.cover,
                         ),
-                        child: Center(child: Text("${index + 1}")),
                       ),
-                      title: Text(
-                          "${data['surah'].toString().replaceAll("+", "'")}"),
-                      subtitle: Text(
-                          "Ayat ${data['ayat']} - via ${data['bookmark_by']}"),
-                      trailing: IconButton(
-                        onPressed: () {
-                          cnt.deleteBookMark(data['id']);
-                        },
-                        icon: Icon(Icons.delete),
-                      ));
+                      child: Center(child: Text("${index + 1}")),
+                    ),
+                    title: Text(
+                        "${data['surah'].toString().replaceAll("+", "'")}"),
+                    subtitle: Text(
+                        "Ayat ${data['ayat']} - via ${data['bookmark_by']}"),
+                    trailing: IconButton(
+                      onPressed: () {
+                        cnt.deleteBookMark(data['id']);
+                      },
+                      icon: Icon(Icons.delete),
+                    ),
+                  );
                 },
               );
             },

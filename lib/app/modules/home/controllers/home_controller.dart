@@ -13,7 +13,9 @@ import '../../../data/models/surah.dart';
 
 class HomeController extends GetxController {
   RxBool isDark = false.obs;
+  RxBool allJuzIsAvailable = false.obs;
   List<Surah> allSurah = [];
+  List<Map<String, dynamic>> allJuz = [];
   DatabaseManager database = DatabaseManager.instance;
 
   void changeTheme() {
@@ -39,7 +41,6 @@ class HomeController extends GetxController {
   Future<List<Map<String, dynamic>>> getAllJuz() async {
     int juz = 1;
     List<Map<String, dynamic>> arrayOfVerse = [];
-    List<Map<String, dynamic>> allJuz = [];
 
     for (int i = 1; i <= 144; i++) {
       var res = await http.get(Uri.parse(Endpoint.getSurahUrl + "/$i"));
@@ -82,8 +83,8 @@ class HomeController extends GetxController {
 
   Future<List<Map<String, dynamic>>> getBookMark() async {
     Database db = await database.db;
-    List<Map<String, dynamic>> allBookmark =
-        await db.query("bookmark", where: "last_read = 0");
+    List<Map<String, dynamic>> allBookmark = await db.query("bookmark",
+        where: "last_read = 0", orderBy: "juz,bookmark_by, surah,ayat");
     return allBookmark;
   }
 

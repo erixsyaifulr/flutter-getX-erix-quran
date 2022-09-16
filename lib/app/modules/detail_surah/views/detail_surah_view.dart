@@ -74,149 +74,6 @@ class DetailSurahView extends GetView<DetailSurahController> {
       );
     }
 
-    Widget listSurah(snapshot) {
-      return ListView.builder(
-        shrinkWrap: true,
-        physics: NeverScrollableScrollPhysics(),
-        itemCount: snapshot.data?.verses?.length ?? 0,
-        itemBuilder: (context, index) {
-          if (snapshot.data!.verses!.isEmpty) {
-            return SizedBox();
-          }
-          detailSurah.Verse verse = snapshot.data!.verses![index];
-          return AutoScrollTag(
-            key: ValueKey(index + 2),
-            index: index + 2,
-            controller: controller.scrollC,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    color: appPurplueLight2.withOpacity(0.15),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          height: 40,
-                          width: 40,
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: AssetImage("assets/images/frame.png"),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          child: Center(child: Text("${index + 1}")),
-                        ),
-                        GetBuilder<DetailSurahController>(
-                          builder: (cnt) => Row(
-                            children: [
-                              IconButton(
-                                onPressed: () {
-                                  Get.defaultDialog(
-                                      title: "Bookmark",
-                                      middleText: "Pilih jenis bookmark",
-                                      actions: [
-                                        ElevatedButton(
-                                          onPressed: () async {
-                                            await cnt.addBookmark(true,
-                                                snapshot.data!, verse, index);
-                                            homeC.update();
-                                          },
-                                          child: Text("Last Read"),
-                                          style: ElevatedButton.styleFrom(
-                                              primary: appPurplue),
-                                        ),
-                                        ElevatedButton(
-                                          onPressed: () {
-                                            cnt.addBookmark(false,
-                                                snapshot.data!, verse, index);
-                                          },
-                                          child: Text("Bookmark"),
-                                          style: ElevatedButton.styleFrom(
-                                              primary: appPurplue),
-                                        ),
-                                      ]);
-                                },
-                                icon: Icon(Icons.bookmark_add_outlined),
-                              ),
-                              (verse.audioState == "stop")
-                                  ? IconButton(
-                                      onPressed: () {
-                                        cnt.playAudion(verse);
-                                      },
-                                      icon: Icon(Icons.play_arrow),
-                                    )
-                                  : Row(
-                                      children: [
-                                        (verse.audioState == "playing")
-                                            ? IconButton(
-                                                onPressed: () {
-                                                  cnt.pauseAudion(verse);
-                                                },
-                                                icon: Icon(Icons.pause),
-                                              )
-                                            : IconButton(
-                                                onPressed: () {
-                                                  cnt.resumeAudion(verse);
-                                                },
-                                                icon: Icon(Icons.play_arrow),
-                                              ),
-                                        IconButton(
-                                          onPressed: () {
-                                            cnt.stopAudion(verse);
-                                          },
-                                          icon: Icon(Icons.stop),
-                                        ),
-                                      ],
-                                    ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Text(
-                    "${verse.text!.arab}",
-                    textAlign: TextAlign.right,
-                    style: TextStyle(fontSize: 25),
-                  ),
-                ),
-                SizedBox(height: 5),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Text(
-                    "${verse.text!.transliteration!.en}",
-                    textAlign: TextAlign.right,
-                    style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
-                  ),
-                ),
-                SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Text(
-                    "${verse.translation!.id}",
-                    textAlign: TextAlign.justify,
-                    style: TextStyle(fontSize: 15),
-                  ),
-                ),
-                SizedBox(height: 20),
-              ],
-            ),
-          );
-        },
-      );
-    }
-
     Widget body() {
       return FutureBuilder<detailSurah.DetailSurah>(
         future: controller.getDetailSurah(Get.arguments["number"].toString()),
@@ -238,6 +95,142 @@ class DetailSurahView extends GetView<DetailSurahController> {
           }
           detailSurah.DetailSurah surah = snapshot.data!;
 
+          List<Widget> allAyat =
+              List.generate(snapshot.data?.verses?.length ?? 0, (index) {
+            detailSurah.Verse verse = snapshot.data!.verses![index];
+            return AutoScrollTag(
+              key: ValueKey(index + 2),
+              index: index + 2,
+              controller: controller.scrollC,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    margin: EdgeInsets.only(top: 10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: appPurplueLight2.withOpacity(0.15),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            height: 40,
+                            width: 40,
+                            decoration: BoxDecoration(
+                              image: DecorationImage(
+                                image: AssetImage("assets/images/frame.png"),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            child: Center(child: Text("${index + 1}")),
+                          ),
+                          GetBuilder<DetailSurahController>(
+                            builder: (cnt) => Row(
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    Get.defaultDialog(
+                                        title: "Bookmark",
+                                        middleText: "Pilih jenis bookmark",
+                                        actions: [
+                                          ElevatedButton(
+                                            onPressed: () async {
+                                              await cnt.addBookmark(true,
+                                                  snapshot.data!, verse, index);
+                                              homeC.update();
+                                            },
+                                            child: Text("Last Read"),
+                                            style: ElevatedButton.styleFrom(
+                                                primary: appPurplue),
+                                          ),
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              cnt.addBookmark(false,
+                                                  snapshot.data!, verse, index);
+                                            },
+                                            child: Text("Bookmark"),
+                                            style: ElevatedButton.styleFrom(
+                                                primary: appPurplue),
+                                          ),
+                                        ]);
+                                  },
+                                  icon: Icon(Icons.bookmark_add_outlined),
+                                ),
+                                (verse.audioState == "stop")
+                                    ? IconButton(
+                                        onPressed: () {
+                                          cnt.playAudion(verse);
+                                        },
+                                        icon: Icon(Icons.play_arrow),
+                                      )
+                                    : Row(
+                                        children: [
+                                          (verse.audioState == "playing")
+                                              ? IconButton(
+                                                  onPressed: () {
+                                                    cnt.pauseAudion(verse);
+                                                  },
+                                                  icon: Icon(Icons.pause),
+                                                )
+                                              : IconButton(
+                                                  onPressed: () {
+                                                    cnt.resumeAudion(verse);
+                                                  },
+                                                  icon: Icon(Icons.play_arrow),
+                                                ),
+                                          IconButton(
+                                            onPressed: () {
+                                              cnt.stopAudion(verse);
+                                            },
+                                            icon: Icon(Icons.stop),
+                                          ),
+                                        ],
+                                      ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Text(
+                      "${verse.text!.arab}",
+                      textAlign: TextAlign.right,
+                      style: TextStyle(fontSize: 25),
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Text(
+                      "${verse.text!.transliteration!.en}",
+                      textAlign: TextAlign.right,
+                      style:
+                          TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Text(
+                      "${verse.translation!.id}",
+                      textAlign: TextAlign.justify,
+                      style: TextStyle(fontSize: 15),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                ],
+              ),
+            );
+          });
+
           return ListView(
             controller: controller.scrollC,
             padding: EdgeInsets.all(20),
@@ -254,7 +247,7 @@ class DetailSurahView extends GetView<DetailSurahController> {
                 controller: controller.scrollC,
                 child: SizedBox(height: 20),
               ),
-              listSurah(snapshot),
+              ...allAyat,
             ],
           );
         },
